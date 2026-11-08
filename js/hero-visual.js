@@ -163,9 +163,9 @@
     ctx.restore();
   }
   function drawDev() {
-    var p = Math.max(0, Math.min(1, mx / W)), t = p * 4, i = Math.min(3, Math.floor(t)), f = t - i, nx = f * f * (3 - 2 * f);
+    var x0 = ox + 14, x1 = ox + S - 14, p = Math.max(0, Math.min(1, (mx - x0) / (x1 - x0))), t = p * 4, i = Math.min(3, Math.floor(t)), f = t - i, nx = f * f * (3 - 2 * f);
     stage(i, 1); if (nx > 0.02 || i === 3 && f > 0) stage(i + 1, i === 3 ? Math.min(1, nx) : nx);
-    var x0 = ox + 14, x1 = ox + S - 14, y = oy + S + 16, k, cur = Math.round(t);
+    var y = oy + S + 16, k, cur = Math.round(t);
     ctx.lineWidth = 2; ctx.strokeStyle = '#334155'; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
     ctx.strokeStyle = '#0EA5E9'; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + (x1 - x0) * p, y); ctx.stroke();
     ctx.font = '600 12px "DM Sans",sans-serif'; ctx.textAlign = 'center';
@@ -184,10 +184,10 @@
   function frame(now) {
     raf = 0;
     if (!active) {
-      if (mode === 2) { tx = W * (0.5 + 0.5 * Math.sin(now * 0.00035 - 1.5708)); ty = H / 2; }
+      if (mode === 2) { tx = ox + 14 + (S - 28) * (0.5 + 0.5 * Math.sin(now * 0.00035 - 1.5708)); ty = H / 2; }
       else { tx = ox + S * (0.5 + 0.3 * Math.cos(now * 0.0006)); ty = oy + S * (0.5 + 0.3 * Math.sin(now * 0.0009)); }
     }
-    mx += (tx - mx) * 0.14; my += (ty - my) * 0.14;
+    var e = mode === 2 ? 0.4 : 0.14; mx += (tx - mx) * e; my += (ty - my) * e;
     draw(now);
     if (!reduce && visible && !document.hidden) raf = requestAnimationFrame(frame);
   }
