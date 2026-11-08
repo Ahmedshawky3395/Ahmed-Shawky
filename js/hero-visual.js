@@ -85,19 +85,20 @@
   }
   function fcf(c, x, y, cells) {
     var w = cells.map(function (t) { return c.measureText(t).width + 1.8; }), tot = w.reduce(function (s, v) { return s + v; }, 0), cx = x;
-    c.fillStyle = '#0b1224'; c.fillRect(x, y, tot, 4.2); c.strokeRect(x, y, tot, 4.2); c.fillStyle = '#E2E8F0'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    cells.forEach(function (t, i) { c.fillText(t, cx + w[i] / 2, y + 2.2); cx += w[i]; if (i < cells.length - 1) { c.beginPath(); c.moveTo(cx, y); c.lineTo(cx, y + 4.2); c.stroke(); } });
+    c.fillStyle = '#0b1224'; c.fillRect(x, y, tot, 4.6); c.strokeRect(x, y, tot, 4.6); c.fillStyle = '#E2E8F0'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    cells.forEach(function (t, i) { c.fillText(t, cx + w[i] / 2, y + 2.4); cx += w[i]; if (i < cells.length - 1) { c.beginPath(); c.moveTo(cx, y); c.lineTo(cx, y + 4.6); c.stroke(); } });
     c.textBaseline = 'alphabetic';
   }
   function lead(c, x1, y1, x2, y2) { c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); }
   function anno(c) {
-    c.save(); c.translate(ox, oy); c.scale(u, u); c.lineWidth = 0.22; c.strokeStyle = '#38BDF8'; c.fillStyle = '#E2E8F0'; c.font = '600 2.9px "DM Sans",sans-serif';
+    c.save(); c.translate(ox, oy); c.scale(u, u); c.lineWidth = 0.22; c.strokeStyle = '#38BDF8'; c.fillStyle = '#E2E8F0'; c.font = '600 3.2px "DM Sans",sans-serif';
     dim(c, 36.5, 50, 63.5, 50, '\u00D859 H7');
     dim(c, 96, 90, 96, 14, '167');
     c.setLineDash([1, 1]); lead(c, 76, 14, 98, 14); lead(c, 56, 90, 98, 90); c.setLineDash([]);
     c.beginPath(); c.moveTo(48.5, 21.5); c.lineTo(51.5, 21.5); c.lineTo(50, 23.2); c.closePath(); c.fill(); lead(c, 50, 21.5, 50, 19);
     c.strokeRect(48, 14.8, 4, 4.2); c.textAlign = 'center'; c.fillText('A', 50, 18);
-    lead(c, 69, 12, 76, 6); fcf(c, 76, 4, ['\u2316', '\u00D80.05', 'A', 'B']);
+    lead(c, 69, 12, 74, 7); fcf(c, 74, 4, ['\u2316', '\u00D80.05', 'A']);
+    c.textAlign = 'left'; c.fillText('4X \u00D88.8', 2, 12); fcf(c, 2, 14, ['\u2316', '\u00D80.2', 'A']); lead(c, 36.4, 36.4, 14, 18.6);
     lead(c, 13, 74.5, 9, 84); fcf(c, 2, 84, ['\u2316', '\u00D80.1', 'A']);
     c.textAlign = 'left'; c.fillStyle = '#E2E8F0'; c.fillText('\u00D813 H9', 1.5, 62); lead(c, 5, 63.5, 11.5, 70);
     lead(c, 49, 87, 60, 82); fcf(c, 60, 80, ['\u27C2', '0.03', 'A']);
@@ -109,6 +110,7 @@
   function drawDesign() {
     ctx.save(); ctx.globalAlpha = 0.6; ctx.drawImage(Oc, ox, oy, S, S); ctx.restore();
     ctx.save(); ctx.translate(ox, oy); ctx.scale(u, u); centerLines(ctx); ctx.restore();
+    ctx.save(); ctx.globalAlpha = 0.9; anno(ctx); ctx.restore();
     var R = Math.min(90, S * 0.3), z = 2.3;
     ctx.save(); ctx.beginPath(); ctx.arc(mx, my, R, 0, TAU); ctx.clip();
     ctx.fillStyle = '#0b1224'; ctx.fillRect(mx - R, my - R, 2 * R, 2 * R);
