@@ -65,14 +65,15 @@
     if (!mx) { mx = tx = W / 2; my = ty = H / 2; }
     if (reduce) draw(0);
   }
-  var lastR = '';
+  var DX = 0, DY = 0, DU = 1, lastR = '';
   var DATUMS = [
-    { x: 50, y: 23, t: 'Datum A: machined hub/bearing mounting face. Flatness 0.02 limits rotor runout and bearing preload error.' },
-    { x: 50, y: 64, t: 'Datum B: wheel bearing bore \u00D859. Perpendicular to A so the wheel runs true to the mounting face.' },
+    { x: 30, y: 108, t: 'Datum A: machined hub/bearing mounting face, seen edge-on in the side view. Flatness 0.02 limits rotor runout and bearing preload error.' },
+    { x: 70, y: 108, t: 'Datum A: machined hub/bearing mounting face, seen edge-on in the side view. Flatness 0.02 limits rotor runout and bearing preload error.' },
+    { x: 50, y: 64, t: 'Datum B: wheel bearing bore \u00D859, perpendicular to A so the wheel runs true to the mounting face.' },
     { x: 35.2, y: 65, t: 'Datum C: hub bolt hole used as the clocking feature that stops rotation about the bore axis.' }
   ];
   function datumReadout() {
-    var ux = (mx - ox) / u, uy = (my - oy) / u, best = null, bd = 14;
+    var ux = (mx - DX) / DU, uy = (my - DY) / DU, best = null, bd = 12;
     DATUMS.forEach(function (d) { var k = Math.hypot(ux - d.x, uy - d.y); if (k < bd) { bd = k; best = d; } });
     var txt = best ? best.t : MODES[0].r;
     if (txt !== lastR) { lastR = txt; elR.textContent = txt; }
@@ -102,6 +103,21 @@
     c.textBaseline = 'alphabetic';
   }
   function lead(c, x1, y1, x2, y2) { c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); }
+  function poly(c, p) { c.beginPath(); p.forEach(function (v, i) { if (i) c.lineTo(v[0], v[1]); else c.moveTo(v[0], v[1]); }); c.closePath(); }
+  /* side (section X-X) view of the hub, drawn below the top view: shows the mounting face edge-on */
+  function sideView(c) {
+    var P = [[[23, 108], [36.5, 108], [36.5, 126], [29, 126], [29, 115], [23, 115]], [[63.5, 108], [77, 108], [77, 115], [71, 115], [71, 126], [63.5, 126]]];
+    c.save();
+    P.forEach(function (p) {
+      poly(c, p); c.save(); c.clip(); c.strokeStyle = 'rgba(125,211,252,.55)'; c.lineWidth = 0.2; c.beginPath();
+      for (var k = 0; k < 85; k += 2.4) { c.moveTo(k, 128); c.lineTo(k + 21, 107); }
+      c.stroke(); c.restore();
+      poly(c, p); c.strokeStyle = '#7dd3fc'; c.lineWidth = 0.35; c.stroke();
+    });
+    c.strokeStyle = '#38BDF8'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(23, 108); c.lineTo(36.5, 108); c.moveTo(63.5, 108); c.lineTo(77, 108); c.stroke();
+    c.setLineDash([3, 2]); c.lineWidth = 0.2; c.strokeStyle = 'rgba(125,211,252,.55)'; c.beginPath(); c.moveTo(50, 105); c.lineTo(50, 129); c.stroke();
+    c.restore();
+  }
   function datum(c, px, py, dx, dy, len, label) {
     var bx = px - dx * 1.8, by = py - dy * 1.8, cx = px - dx * (1.8 + len), cy = py - dy * (1.8 + len), nx = -dy, ny = dx;
     c.beginPath(); c.moveTo(bx, by); c.lineTo(cx, cy); c.stroke();
@@ -110,14 +126,20 @@
     c.fillStyle = '#E2E8F0'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(label, cx, cy + 0.2); c.textBaseline = 'alphabetic';
   }
   function anno(c) {
-    c.save(); c.translate(ox, oy); c.scale(u, u); c.lineWidth = 0.22; c.strokeStyle = '#38BDF8'; c.fillStyle = '#E2E8F0'; c.font = '600 3.2px "DM Sans",sans-serif';
+    c.save(); c.translate(DX, DY); c.scale(DU, DU); c.lineWidth = 0.22; c.strokeStyle = '#38BDF8'; c.fillStyle = '#E2E8F0'; c.font = '600 3.2px "DM Sans",sans-serif';
+    sideView(c);
     dim(c, 36.5, 50, 63.5, 50, '\u00D859 H7');
     dim(c, 96, 90, 96, 14, '167 \u00B10.2');
     c.setLineDash([1, 1]); lead(c, 76, 14, 98, 14); lead(c, 56, 90, 98, 90); c.setLineDash([]);
-    /* Datum A: machined hub/bearing mounting face, controlled by flatness */
-    datum(c, 50, 23.2, 0, 1, 4, 'A'); lead(c, 42.2, 12, 46.5, 23.1); fcf(c, 29, 9.5, ['\u25B1', '0.02']);
-    /* Datum B: wheel bearing bore (spindle axis), perpendicular to A */
-    datum(c, 50, 63.5, 0, -1, 4, 'B'); lead(c, 22.4, 44.3, 37, 46.5); fcf(c, 2, 42, ['\u27C2', '\u00D80.03', 'A']);
+    /* cutting plane X-X through the bore axis (gives the side view) */
+    c.save(); c.lineWidth = 0.7; c.beginPath(); c.moveTo(12, 46.5); c.lineTo(12, 53.5); c.moveTo(88, 46.5); c.lineTo(88, 53.5); c.stroke(); c.restore();
+    c.textAlign = 'center'; c.fillText('X', 12, 45); c.fillText('X', 88, 45);
+    /* Datum A: machined hub/bearing mounting face, shown edge-on in the side view, controlled by flatness */
+    datum(c, 28, 108, 0, 1, 4, 'A'); lead(c, 67, 104.6, 67, 108); fcf(c, 60, 100, ['\u25B1', '0.02']);
+    /* bore axis perpendicular to datum A (side view) */
+    lead(c, 78, 121.3, 63.5, 121); fcf(c, 78, 119, ['\u27C2', '\u00D80.03', 'A']);
+    /* Datum B: wheel bearing bore, seen as a circle in the top view */
+    datum(c, 50, 63.5, 0, -1, 4, 'B');
     /* Datum C: hub bolt hole used as the clocking feature */
     datum(c, 35.15, 66.85, 0, -1, 12, 'C');
     lead(c, 69, 12, 74, 7); fcf(c, 74, 4, ['\u2316', '\u00D80.05', 'A', 'B']);
@@ -125,19 +147,23 @@
     lead(c, 13, 74.5, 9, 84); fcf(c, 2, 84, ['\u2316', '\u00D80.1', 'A', 'B']);
     c.textAlign = 'left'; c.fillStyle = '#E2E8F0'; c.fillText('\u00D813 H9', 1.5, 62); lead(c, 5, 63.5, 11.5, 70);
     lead(c, 49, 87, 60, 82); fcf(c, 60, 80, ['\u2316', '\u00D80.05', 'A', 'B']);
+    c.setLineDash([1, 1]); lead(c, 23, 116, 23, 131.5); lead(c, 77, 116, 77, 131.5); c.setLineDash([]);
+    dim(c, 23, 131, 77, 131, '\u00D8119');
+    c.textAlign = 'center'; c.fillStyle = '#94A3B8'; c.fillText('SECTION X-X', 50, 135.5);
     c.restore();
   }
 
   /* ---------- modes ---------- */
   function drawDesign() {
-    ctx.save(); ctx.globalAlpha = 0.6; ctx.drawImage(Oc, ox, oy, S, S); ctx.restore();
-    ctx.save(); ctx.translate(ox, oy); ctx.scale(u, u); centerLines(ctx); ctx.restore();
+    var fT = 0.74, Tw = S * fT; DU = u * fT; DX = ox + (S - Tw) / 2; DY = oy;
+    ctx.save(); ctx.globalAlpha = 0.6; ctx.drawImage(Oc, DX, DY, Tw, Tw); ctx.restore();
+    ctx.save(); ctx.translate(DX, DY); ctx.scale(DU, DU); centerLines(ctx); ctx.restore();
     ctx.save(); ctx.globalAlpha = 0.9; anno(ctx); ctx.restore();
     var R = Math.min(90, S * 0.3), z = 2.3;
     ctx.save(); ctx.beginPath(); ctx.arc(mx, my, R, 0, TAU); ctx.clip();
     ctx.fillStyle = '#0b1224'; ctx.fillRect(mx - R, my - R, 2 * R, 2 * R);
     ctx.translate(mx, my); ctx.scale(z, z); ctx.translate(-mx, -my);
-    ctx.drawImage(Oc, ox, oy, S, S); ctx.save(); ctx.translate(ox, oy); ctx.scale(u, u); centerLines(ctx); ctx.restore(); anno(ctx);
+    ctx.drawImage(Oc, DX, DY, Tw, Tw); ctx.save(); ctx.translate(DX, DY); ctx.scale(DU, DU); centerLines(ctx); ctx.restore(); anno(ctx);
     ctx.restore();
     ctx.beginPath(); ctx.arc(mx, my, R, 0, TAU); ctx.strokeStyle = '#0EA5E9'; ctx.lineWidth = 2; ctx.stroke();
   }
