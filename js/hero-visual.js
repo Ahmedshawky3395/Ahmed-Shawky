@@ -65,8 +65,20 @@
     if (!mx) { mx = tx = W / 2; my = ty = H / 2; }
     if (reduce) draw(0);
   }
+  var lastR = '';
+  var DATUMS = [
+    { x: 50, y: 23, t: 'Datum A: machined hub/bearing mounting face. Flatness 0.02 limits rotor runout and bearing preload error.' },
+    { x: 50, y: 64, t: 'Datum B: wheel bearing bore \u00D859. Perpendicular to A so the wheel runs true to the mounting face.' },
+    { x: 35.2, y: 65, t: 'Datum C: hub bolt hole used as the clocking feature that stops rotation about the bore axis.' }
+  ];
+  function datumReadout() {
+    var ux = (mx - ox) / u, uy = (my - oy) / u, best = null, bd = 14;
+    DATUMS.forEach(function (d) { var k = Math.hypot(ux - d.x, uy - d.y); if (k < bd) { bd = k; best = d; } });
+    var txt = best ? best.t : MODES[0].r;
+    if (txt !== lastR) { lastR = txt; elR.textContent = txt; }
+  }
   function setMode(i) {
-    mode = i;
+    mode = i; lastR = MODES[i].r;
     btns.forEach(function (b, k) { b.setAttribute('aria-pressed', k === i ? 'true' : 'false'); });
     elT.textContent = MODES[i].t; elD.textContent = MODES[i].d; elR.textContent = MODES[i].r;
     if (reduce) draw(0);
@@ -90,19 +102,29 @@
     c.textBaseline = 'alphabetic';
   }
   function lead(c, x1, y1, x2, y2) { c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); }
+  function datum(c, px, py, dx, dy, len, label) {
+    var bx = px - dx * 1.8, by = py - dy * 1.8, cx = px - dx * (1.8 + len), cy = py - dy * (1.8 + len), nx = -dy, ny = dx;
+    c.beginPath(); c.moveTo(bx, by); c.lineTo(cx, cy); c.stroke();
+    c.beginPath(); c.moveTo(px, py); c.lineTo(bx + nx * 1.5, by + ny * 1.5); c.lineTo(bx - nx * 1.5, by - ny * 1.5); c.closePath(); c.fill();
+    c.fillStyle = '#0b1224'; c.fillRect(cx - 2.3, cy - 2.3, 4.6, 4.6); c.strokeRect(cx - 2.3, cy - 2.3, 4.6, 4.6);
+    c.fillStyle = '#E2E8F0'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(label, cx, cy + 0.2); c.textBaseline = 'alphabetic';
+  }
   function anno(c) {
     c.save(); c.translate(ox, oy); c.scale(u, u); c.lineWidth = 0.22; c.strokeStyle = '#38BDF8'; c.fillStyle = '#E2E8F0'; c.font = '600 3.2px "DM Sans",sans-serif';
     dim(c, 36.5, 50, 63.5, 50, '\u00D859 H7');
-    dim(c, 96, 90, 96, 14, '167');
+    dim(c, 96, 90, 96, 14, '167 \u00B10.2');
     c.setLineDash([1, 1]); lead(c, 76, 14, 98, 14); lead(c, 56, 90, 98, 90); c.setLineDash([]);
-    c.beginPath(); c.moveTo(48.5, 21.5); c.lineTo(51.5, 21.5); c.lineTo(50, 23.2); c.closePath(); c.fill(); lead(c, 50, 21.5, 50, 19);
-    c.strokeRect(48, 14.8, 4, 4.2); c.textAlign = 'center'; c.fillText('A', 50, 18);
-    lead(c, 69, 12, 74, 7); fcf(c, 74, 4, ['\u2316', '\u00D80.05', 'A']);
-    c.textAlign = 'left'; c.fillText('4X \u00D88.8', 2, 12); fcf(c, 2, 14, ['\u2316', '\u00D80.2', 'A']); lead(c, 36.4, 36.4, 14, 18.6);
-    lead(c, 13, 74.5, 9, 84); fcf(c, 2, 84, ['\u2316', '\u00D80.1', 'A']);
+    /* Datum A: machined hub/bearing mounting face, controlled by flatness */
+    datum(c, 50, 23.2, 0, 1, 4, 'A'); lead(c, 42.2, 12, 46.5, 23.1); fcf(c, 29, 9.5, ['\u25B1', '0.02']);
+    /* Datum B: wheel bearing bore (spindle axis), perpendicular to A */
+    datum(c, 50, 63.5, 0, -1, 4, 'B'); lead(c, 22.4, 44.3, 37, 46.5); fcf(c, 2, 42, ['\u27C2', '\u00D80.03', 'A']);
+    /* Datum C: hub bolt hole used as the clocking feature */
+    datum(c, 35.15, 66.85, 0, -1, 12, 'C');
+    lead(c, 69, 12, 74, 7); fcf(c, 74, 4, ['\u2316', '\u00D80.05', 'A', 'B']);
+    c.textAlign = 'left'; c.fillText('4X \u00D88.8', 2, 12); fcf(c, 2, 14, ['\u2316', '\u00D80.2', 'A', 'B']); lead(c, 36.4, 36.4, 14, 18.6);
+    lead(c, 13, 74.5, 9, 84); fcf(c, 2, 84, ['\u2316', '\u00D80.1', 'A', 'B']);
     c.textAlign = 'left'; c.fillStyle = '#E2E8F0'; c.fillText('\u00D813 H9', 1.5, 62); lead(c, 5, 63.5, 11.5, 70);
-    lead(c, 49, 87, 60, 82); fcf(c, 60, 80, ['\u27C2', '0.03', 'A']);
-    lead(c, 80, 48.5, 80, 42); fcf(c, 72, 48.5, ['\u25B1', '0.02']);
+    lead(c, 49, 87, 60, 82); fcf(c, 60, 80, ['\u2316', '\u00D80.05', 'A', 'B']);
     c.restore();
   }
 
@@ -181,7 +203,7 @@
   }
   function draw(now) {
     ctx.clearRect(0, 0, W, H);
-    if (mode === 0) drawDesign(); else if (mode === 1) drawSim(); else drawDev();
+    if (mode === 0) { drawDesign(); datumReadout(); } else if (mode === 1) drawSim(); else drawDev();
   }
   function frame(now) {
     raf = 0;
