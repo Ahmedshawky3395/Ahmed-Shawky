@@ -47,3 +47,17 @@
 .viz-panel canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .expertise-card .card-number{z-index:2}
 @media(prefers-reduced-motion:reduce){.expertise-card{transition:none}}
+/* 3D models section */
+.models-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.model-card{background:#16213a;border:1px solid #243049;display:flex;flex-direction:column;min-width:0;transition:transform .25s,border-color .25s,box-shadow .25s}
+.model-card:hover,.model-card:focus-within{transform:translateY(-6px);border-color:#0EA5E9;box-shadow:0 22px 48px rgba(2,6,23,.55)}
+.model-view{position:relative;aspect-ratio:4/3;background:#0b1324;border-bottom:1px solid #243049}
+.model-view::before{content:"Loading 3D preview\2026";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#94A3B8}
+.model-view iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.model-card .project-info{display:flex;flex-direction:column;flex:1}
+.model-card .project-info h3{font-size:19px}
+.model-card .text-link{margin-top:auto}
+.models-all{margin:30px 0 0}
+@media(max-width:900px){.models-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.models-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.model-card{transition:none}.model-card:hover,.model-card:focus-within{transform:none}}
